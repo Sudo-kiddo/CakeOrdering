@@ -17,7 +17,7 @@
       --secondary: #2d6a4f;
       --accent: #52b788;
       --light-green: #d8f3dc;
-      --bg-cream: #f8f9fa;
+      --bg-cream: #f0f4f1;
       --card-bg: #ffffff;
       --text-dark: #2d3748;
       --text-muted: #718096;
@@ -38,7 +38,7 @@
     }
 
     body {
-      background-color: #f0f4f1;
+      background-color: var(--bg-cream);
       color: var(--text-dark);
       line-height: 1.5;
       padding-bottom: 60px;
@@ -125,7 +125,7 @@
       color: var(--text-dark);
     }
 
-    .form-group input, .form-group textarea {
+    .form-group input, .form-group textarea, .form-group select {
       padding: 12px 14px;
       border: 1.5px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -135,10 +135,23 @@
       background-color: #fafafa;
     }
 
-    .form-group input:focus, .form-group textarea:focus {
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
       border-color: var(--secondary);
       background-color: #fff;
       box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+    }
+
+    /* Custom Scrollable Time Picker Layout */
+    .time-picker-grid {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .time-picker-grid select {
+      flex: 1;
+      max-height: 200px;
+      cursor: pointer;
     }
 
     /* Accordion Category Design */
@@ -425,7 +438,7 @@
 
   <div class="container" id="form-view">
     
-    <!-- Clean Header -->
+    <!-- Header -->
     <header>
       <h1>Cake Ordering Form</h1>
       <p>Select your items and complete your details to send your order</p>
@@ -441,20 +454,33 @@
         <div class="form-grid">
           <div class="form-group">
             <label for="guestName">Guest Name *</label>
-            <input type="text" id="guestName" required placeholder="e.g. Amy">
+            <input type="text" id="guestName" required placeholder="e.g. Edward">
           </div>
           <div class="form-group">
             <label for="tel">Contact Tel *</label>
             <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
           </div>
+          
+          <!-- Date in DD/MM/YYYY Format -->
           <div class="form-group">
-            <label for="pickupDate">Pickup Date *</label>
-            <input type="date" id="pickupDate" required>
+            <label for="pickupDate">Pickup Date (DD/MM/YYYY) *</label>
+            <input type="text" id="pickupDate" required placeholder="DD/MM/YYYY" maxlength="10">
           </div>
+
+          <!-- Scrollable Time Selector -->
           <div class="form-group">
-            <label for="pickupTime">Pickup Time *</label>
-            <input type="time" id="pickupTime" required value="12:00">
+            <label>Pickup Time *</label>
+            <div class="time-picker-grid">
+              <select id="pickupHour" required>
+                <!-- Hours populated by JS -->
+              </select>
+              <span style="font-weight: bold; color: var(--primary);">:</span>
+              <select id="pickupMinute" required>
+                <!-- Minutes populated by JS -->
+              </select>
+            </div>
           </div>
+
           <div class="form-group full-width">
             <label for="wording">Wording on Cake</label>
             <input type="text" id="wording" placeholder="e.g. Happy Birthday John!">
@@ -643,7 +669,7 @@
     // State tracking
     const selectedState = {};
 
-    // --- 3. INITIALIZE & RENDER FORM ---
+    // --- 3. INITIALIZE FORM COMPONENTS ---
     function init() {
       // Render categorized items
       cakeData.forEach(item => {
@@ -653,15 +679,52 @@
         const catContainer = document.getElementById(`cat-${item.cat}`);
         if (catContainer) catContainer.insertAdjacentHTML('beforeend', itemHtml);
 
-        // Append to 'All Items' container as well
+        // Append to 'All Items' container
         const allContainer = document.getElementById('cat-all');
         if (allContainer) allContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item, 'all_'));
       });
 
-      // Set default pickup date to tomorrow
+      // Populate Scrollable Hours & Minutes
+      const hourSelect = document.getElementById('pickupHour');
+      for (let h = 0; h < 24; h++) {
+        const val = h.toString().padStart(2, '0');
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.innerText = val;
+        if (h === 12) opt.selected = true; // Default 12
+        hourSelect.appendChild(opt);
+      }
+
+      const minuteSelect = document.getElementById('pickupMinute');
+      for (let m = 0; m < 60; m += 5) {
+        const val = m.toString().padStart(2, '0');
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.innerText = val;
+        minuteSelect.appendChild(opt);
+      }
+
+      // Default Date Format DD/MM/YYYY
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      document.getElementById('pickupDate').value = tomorrow.toISOString().split('T')[0];
+      const dd = String(tomorrow.getDate()).padStart(2, '0');
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const yyyy = tomorrow.getFullYear();
+      document.getElementById('pickupDate').value = `${dd}/${mm}/${yyyy}`;
+
+      // Auto-format DD/MM/YYYY keystrokes
+      const dateInput = document.getElementById('pickupDate');
+      dateInput.addEventListener('input', function(e) {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length > 8) v = v.substring(0, 8);
+        if (v.length >= 5) {
+          e.target.value = `${v.substring(0,2)}/${v.substring(2,4)}/${v.substring(4)}`;
+        } else if (v.length >= 3) {
+          e.target.value = `${v.substring(0,2)}/${v.substring(2)}`;
+        } else {
+          e.target.value = v;
+        }
+      });
     }
 
     function createItemCardHtml(item, prefix = '') {
@@ -718,7 +781,6 @@
       currentVal = Math.max(0, currentVal + delta);
       input.value = currentVal;
       
-      // Keep primary and 'all' inputs in sync
       const altPrefix = prefix === '' ? 'all_' : '';
       const altInput = document.getElementById(`qty_${altPrefix}${itemId}`);
       if (altInput) altInput.value = currentVal;
@@ -735,7 +797,6 @@
       const sizeSelect = document.getElementById(`size_${prefix}${itemId}`);
       if (sizeSelect) {
         sizeIdx = parseInt(sizeSelect.value) || 0;
-        // Sync alt option
         const altPrefix = prefix === '' ? 'all_' : '';
         const altSelect = document.getElementById(`size_${altPrefix}${itemId}`);
         if (altSelect) altSelect.value = sizeIdx;
@@ -796,7 +857,6 @@
         tbody.appendChild(row);
       });
 
-      // Total Row
       const totalRow = document.createElement('tr');
       totalRow.className = 'summary-total-row';
       totalRow.innerHTML = `
@@ -822,11 +882,21 @@
       const guestName = document.getElementById('guestName').value;
       const tel = document.getElementById('tel').value;
       const pickupDate = document.getElementById('pickupDate').value;
-      const pickupTime = document.getElementById('pickupTime').value;
+      const pickupHour = document.getElementById('pickupHour').value;
+      const pickupMinute = document.getElementById('pickupMinute').value;
+      const pickupTime = `${pickupHour}:${pickupMinute}`;
+
+      // Date Format Validation (DD/MM/YYYY)
+      const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+      if (!dateRegex.test(pickupDate)) {
+        alert("Please enter a valid pickup date in DD/MM/YYYY format.");
+        return;
+      }
+
       const wording = document.getElementById('wording').value || 'None';
       const remarks = document.getElementById('remarks').value || 'None';
 
-      // Generate HTML Template for PDF
+      // Generate PDF Document Content
       let pdfContent = `
         <div style="padding: 24px; font-family: sans-serif;">
           <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - Submission</h2>
@@ -879,10 +949,10 @@
         </div>
       `;
 
-      // Trigger automatic PDF download
+      // Download PDF
       const opt = {
         margin: 0.5,
-        filename: `Cake_Order_${guestName.replace(/\s+/g, '_')}_${pickupDate}.pdf`,
+        filename: `Cake_Order_${guestName.replace(/\s+/g, '_')}_${pickupDate.replace(/\//g, '-')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -890,7 +960,7 @@
 
       html2pdf().set(opt).from(pdfContent).save();
 
-      // Show confirmation screen
+      // Navigate to confirmation screen
       document.getElementById('form-view').style.display = 'none';
       document.getElementById('confirmation-screen').style.display = 'block';
       window.scrollTo(0, 0);
@@ -900,7 +970,6 @@
       document.getElementById('cake-order-form').reset();
       Object.keys(selectedState).forEach(key => delete selectedState[key]);
       
-      // Clear CSS states
       document.querySelectorAll('.item-card').forEach(card => card.classList.remove('has-qty'));
       document.querySelectorAll('.qty-input').forEach(input => input.value = '0');
 
