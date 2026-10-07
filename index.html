@@ -1,610 +1,916 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cake Order Web Form</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- html2pdf.js CDN for PDF export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bakery: {
-                            50: '#FAF8F5',
-                            100: '#F5EFE6',
-                            200: '#E8DFD1',
-                            500: '#8C7A6B',
-                            700: '#5C4E43',
-                            800: '#3D332A',
-                            accent: '#4E6E58', // Soft Sage Green
-                            accentHover: '#3D5845'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom styling for clean print & responsive layout */
-        body {
-            background-color: #FAF8F5;
-            color: #3D332A;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .item-card:hover {
-            border-color: #4E6E58;
-        }
-        /* Styles applied during PDF rendering */
-        .pdf-mode {
-            background: #ffffff !important;
-            padding: 20px !important;
-            width: 100% !important;
-        }
-        .pdf-mode .no-pdf {
-            display: none !important;
-        }
-        .pdf-mode .pdf-only {
-            display: block !important;
-        }
-    </style>
-</head>
-<body class="min-h-screen pb-16">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cake Ordering Form</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2pdf.js for Client-side PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-white border-b border-bakery-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-bakery-accent text-white p-2 rounded-xl">
-                    <i data-lucide="cake" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg text-bakery-800 leading-tight">Bakery Order System</h1>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button onclick="resetForm()" class="no-pdf text-xs md:text-sm px-3 py-2 text-bakery-700 hover:bg-bakery-100 rounded-lg transition-colors flex items-center space-x-1">
-                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Reset</span>
-                </button>
-                <button onclick="generatePDFAndEmail()" class="bg-bakery-accent hover:bg-bakery-accentHover text-white px-4 py-2 rounded-xl font-medium text-xs md:text-sm shadow-sm transition-all flex items-center space-x-2">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                    <span>Submit & Send Order</span>
-                </button>
-            </div>
-        </div>
+  <style>
+    :root {
+      --primary: #1b4332;
+      --primary-hover: #143225;
+      --secondary: #2d6a4f;
+      --accent: #52b788;
+      --light-green: #d8f3dc;
+      --bg-cream: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-dark: #2d3748;
+      --text-muted: #718096;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 2px 4px rgba(27, 67, 50, 0.05);
+      --shadow-md: 0 4px 12px rgba(27, 67, 50, 0.08);
+      --shadow-lg: 0 10px 25px rgba(27, 67, 50, 0.12);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #f0f4f1;
+      color: var(--text-dark);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    /* Green Header Bar */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 32px 24px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--light-green);
+      font-size: 0.95rem;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid var(--light-green);
+      padding-bottom: 10px;
+    }
+
+    .card-title i {
+      color: var(--secondary);
+    }
+
+    /* Grid Form Inputs */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .form-group input, .form-group textarea {
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #fafafa;
+    }
+
+    .form-group input:focus, .form-group textarea:focus {
+      border-color: var(--secondary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+    }
+
+    /* Accordion Category Design */
+    .category-accordion {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .accordion-header {
+      background: #f4f8f5;
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .accordion-header:hover {
+      background: var(--light-green);
+    }
+
+    .accordion-header .badge {
+      background: var(--secondary);
+      color: white;
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .accordion-content {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .accordion-content.collapsed {
+      display: none;
+    }
+
+    /* Item Card Layout */
+    .item-card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .item-card.has-qty {
+      border-color: var(--accent);
+      background-color: #f7fcf8;
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .item-info {
+      margin-bottom: 10px;
+    }
+
+    .item-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+    }
+
+    .item-price {
+      font-size: 0.88rem;
+      color: var(--secondary);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .item-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .size-select {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .qty-picker {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: #eef2ef;
+      color: var(--primary);
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .qty-btn:hover {
+      background: var(--light-green);
+    }
+
+    .qty-input {
+      width: 34px;
+      height: 28px;
+      border: none;
+      text-align: center;
+      font-size: 0.88rem;
+      font-weight: 600;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Live Order Summary Table */
+    .summary-table-container {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .summary-table th {
+      background: #f4f8f5;
+      color: var(--primary);
+      padding: 10px 12px;
+      font-weight: 600;
+      border-bottom: 2px solid var(--light-green);
+    }
+
+    .summary-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .summary-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .summary-total-row {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary);
+      background: #f7fcf8;
+    }
+
+    .empty-summary-msg {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 20px;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    /* Single Submit Button */
+    .submit-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 400px;
+      justify-content: center;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Confirmation Screen View */
+    #confirmation-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      margin-top: 40px;
+    }
+
+    #confirmation-screen i {
+      font-size: 4rem;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    #confirmation-screen h2 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    #confirmation-screen p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 500px;
+      margin: 0 auto 24px auto;
+    }
+
+    .btn-secondary {
+      background: #eef2ef;
+      color: var(--primary);
+      border: 1px solid var(--border-color);
+      padding: 10px 24px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--light-green);
+    }
+
+    /* Responsive Mobile Fixes */
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .full-width {
+        grid-column: span 1;
+      }
+      header h1 {
+        font-size: 1.75rem;
+      }
+      .accordion-content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="form-view">
+    
+    <!-- Clean Header -->
+    <header>
+      <h1>Cake Ordering Form</h1>
+      <p>Select your items and complete your details to send your order</p>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-6xl mx-auto px-4 mt-6">
-        <!-- Toast Notification Area -->
-        <div id="toast" class="hidden fixed bottom-6 right-6 z-50 bg-bakery-800 text-white px-4 py-3 rounded-xl shadow-lg flex items-center space-x-3 transition-opacity">
-            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
-            <span id="toast-message" class="text-sm font-medium">Order updated successfully</span>
+    <form id="cake-order-form">
+      
+      <!-- Customer Information Card -->
+      <div class="card">
+        <div class="card-title">
+          <i class="fa-solid fa-user-tag"></i> Customer & Order Details
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="guestName">Guest Name *</label>
+            <input type="text" id="guestName" required placeholder="e.g. Edward">
+          </div>
+          <div class="form-group">
+            <label for="tel">Contact Tel *</label>
+            <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
+          </div>
+          <div class="form-group">
+            <label for="pickupDate">Pickup Date *</label>
+            <input type="date" id="pickupDate" required>
+          </div>
+          <div class="form-group">
+            <label for="pickupTime">Pickup Time *</label>
+            <input type="time" id="pickupTime" required value="12:00">
+          </div>
+          <div class="form-group full-width">
+            <label for="wording">Wording on Cake</label>
+            <input type="text" id="wording" placeholder="e.g. Happy Birthday John!">
+          </div>
+          <div class="form-group full-width">
+            <label for="remarks">Remarks</label>
+            <textarea id="remarks" rows="2" placeholder="Any special requests or notes..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item Selection Section -->
+      <div class="card">
+        <div class="card-title">
+          <i class="fa-solid fa-cake-candles"></i> Select Items
         </div>
 
-        <!-- Order Form Printable Card -->
-        <div id="order-form-container" class="bg-white rounded-2xl border border-bakery-200 shadow-sm p-6 md:p-8">
-            
-            <!-- Header Metadata Section -->
-            <div class="border-b border-bakery-200 pb-6 mb-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <div>
-                        <span class="inline-block px-3 py-1 bg-emerald-50 text-bakery-accent font-semibold text-xs rounded-full uppercase tracking-wider mb-1">Official Order Form</span>
-                        <h2 class="text-2xl font-bold text-bakery-800">Cake Order Form</h2>
-                    </div>
-                    <div class="text-right flex items-center gap-2 text-sm text-bakery-500">
-                        <i data-lucide="calendar" class="w-4 h-4"></i>
-                        <span>Submitted Date:</span>
-                        <input type="date" id="order-date" class="border border-bakery-200 rounded-lg px-2 py-1 text-sm text-bakery-800 font-medium focus:outline-none focus:border-bakery-accent">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-bakery-50 p-4 rounded-xl border border-bakery-200/60">
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 uppercase tracking-wide mb-1">Department (Dept)</label>
-                        <input type="text" id="dept" value="GREEN" placeholder="e.g. GREEN" class="w-full bg-white border border-bakery-200 rounded-lg px-3 py-2 text-sm text-bakery-800 focus:outline-none focus:border-bakery-accent font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 uppercase tracking-wide mb-1">Submitted By</label>
-                        <input type="text" id="submitted-by" placeholder="Your Name / Staff ID" class="w-full bg-white border border-bakery-200 rounded-lg px-3 py-2 text-sm text-bakery-800 focus:outline-none focus:border-bakery-accent">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Category Tabs / Filter Bar -->
-            <div class="no-pdf flex flex-wrap items-center justify-between gap-3 mb-6 bg-bakery-50 p-2 rounded-xl">
-                <div class="flex flex-wrap gap-1">
-                    <button type="button" onclick="filterCategory('all')" id="tab-all" class="category-tab active px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white shadow-sm text-bakery-800">All Items</button>
-                    <button type="button" onclick="filterCategory('cat-1')" id="tab-cat-1" class="category-tab px-3 py-1.5 rounded-lg text-xs font-medium text-bakery-500 hover:text-bakery-800 transition-all">Whole & Specialty Cakes</button>
-                    <button type="button" onclick="filterCategory('cat-2')" id="tab-cat-2" class="category-tab px-3 py-1.5 rounded-lg text-xs font-medium text-bakery-500 hover:text-bakery-800 transition-all">Mini Cakes & Pastries</button>
-                    <button type="button" onclick="filterCategory('cat-3')" id="tab-cat-3" class="category-tab px-3 py-1.5 rounded-lg text-xs font-medium text-bakery-500 hover:text-bakery-800 transition-all">Add-ons & Others</button>
-                </div>
-                <div class="relative w-full sm:w-48">
-                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-bakery-500"></i>
-                    <input type="text" id="search-input" onkeyup="filterItems()" placeholder="Search cakes..." class="w-full bg-white border border-bakery-200 rounded-lg pl-8 pr-3 py-1 text-xs focus:outline-none focus:border-bakery-accent">
-                </div>
-            </div>
-
-            <!-- Products Grid Container -->
-            <div class="space-y-8">
-                
-                <!-- CATEGORY 1 -->
-                <section id="cat-1-section" class="category-group">
-                    <div class="flex items-center space-x-2 border-b border-bakery-200 pb-2 mb-4">
-                        <i data-lucide="cake" class="w-5 h-5 text-bakery-accent"></i>
-                        <h3 class="font-bold text-bakery-800 text-base">Whole Cakes / Specialty Cakes</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="cat-1-grid">
-                        <!-- Dynamic items populated via JS -->
-                    </div>
-                </section>
-
-                <!-- CATEGORY 2 -->
-                <section id="cat-2-section" class="category-group">
-                    <div class="flex items-center space-x-2 border-b border-bakery-200 pb-2 mb-4">
-                        <i data-lucide="cookie" class="w-5 h-5 text-bakery-accent"></i>
-                        <h3 class="font-bold text-bakery-800 text-base">Mini Cakes, Pastries & Snacks</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="cat-2-grid">
-                        <!-- Dynamic items populated via JS -->
-                    </div>
-                </section>
-
-                <!-- CATEGORY 3 -->
-                <section id="cat-3-section" class="category-group">
-                    <div class="flex items-center space-x-2 border-b border-bakery-200 pb-2 mb-4">
-                        <i data-lucide="gift" class="w-5 h-5 text-bakery-accent"></i>
-                        <h3 class="font-bold text-bakery-800 text-base">Add-ons & Accessories</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="cat-3-grid">
-                        <!-- Dynamic items populated via JS -->
-                    </div>
-                </section>
-            </div>
-
-            <!-- Order Summary Matrix (Visible during PDF or summary review) -->
-            <div class="mt-8 pt-6 border-t border-bakery-200">
-                <h3 class="text-sm font-bold text-bakery-800 uppercase tracking-wide mb-3 flex items-center justify-between">
-                    <span>Order Summary</span>
-                    <span id="selected-count-badge" class="text-xs font-normal text-bakery-500">0 items selected</span>
-                </h3>
-                <div class="overflow-x-auto rounded-xl border border-bakery-200 bg-bakery-50/50">
-                    <table class="w-full text-left text-xs text-bakery-800">
-                        <thead class="bg-bakery-100/60 text-bakery-700 font-semibold border-b border-bakery-200">
-                            <tr>
-                                <th class="p-2.5">Item Name</th>
-                                <th class="p-2.5">Option / Size</th>
-                                <th class="p-2.5 text-center">Price</th>
-                                <th class="p-2.5 text-center">Qty</th>
-                                <th class="p-2.5 text-right">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody id="summary-table-body">
-                            <tr id="empty-summary-row">
-                                <td colspan="5" class="p-4 text-center text-bakery-500 italic">
-                                    No items added yet. Choose items above to build your order.
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tfoot class="border-t border-bakery-200 bg-white font-bold text-sm">
-                            <tr>
-                                <td colspan="4" class="p-3 text-right text-bakery-700">Estimated Total Amount:</td>
-                                <td class="p-3 text-right text-bakery-accent text-base">$<span id="grand-total">0</span></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Customer & Pickup Information Section -->
-            <div class="mt-8 pt-6 border-t border-bakery-200">
-                <h3 class="text-sm font-bold text-bakery-800 uppercase tracking-wide mb-4 flex items-center space-x-2">
-                    <i data-lucide="user-check" class="w-4 h-4 text-bakery-accent"></i>
-                    <span>Customer & Pickup Details</span>
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Guest Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="guest-name" required placeholder="e.g. Edward" class="w-full border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Tel Number <span class="text-red-500">*</span></label>
-                        <input type="tel" id="guest-tel" required placeholder="e.g. 91234567" class="w-full border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Pick Up Outlet</label>
-                        <input type="text" id="pickup-outlet" placeholder="e.g. Central Outlet" class="w-full border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Pickup Date <span class="text-red-500">*</span></label>
-                        <input type="date" id="pickup-date" required class="w-full border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Pickup Time</label>
-                        <input type="time" id="pickup-time" value="12:00" class="w-full border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Wording on Cake</label>
-                        <input type="text" id="cake-wording" placeholder="e.g. Happy Birthday Edward!" class="w-full border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Remarks / Special Instructions</label>
-                        <textarea id="remarks" rows="2" placeholder="Candles, allergies, ice bag requirements..." class="w-full border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent"></textarea>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-bakery-50 p-4 rounded-xl border border-bakery-200/60">
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Settlement Status / Ref No.</label>
-                        <input type="text" id="settlement" placeholder="e.g. Paid / Ref: 22034007" class="w-full bg-white border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-bakery-700 mb-1">Confirmed By</label>
-                        <input type="text" id="confirmed-by" placeholder="e.g. Staff Name / Signature" class="w-full bg-white border border-bakery-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-bakery-accent">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Email Destination Banner -->
-            <div class="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 no-pdf">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="mail-check" class="w-5 h-5 text-emerald-600 flex-shrink-0"></i>
-                    <span><strong>Email Destination:</strong> You can enter the target manager email below or send directly via your mail app.</span>
-                </div>
-                <div class="w-full sm:w-auto flex items-center gap-2">
-                    <input type="email" id="target-email" placeholder="manager@bakery.com" class="px-3 py-1.5 border border-emerald-300 rounded-lg text-xs w-full sm:w-56 focus:outline-none">
-                </div>
-            </div>
-
-            <!-- Footer Action Buttons -->
-            <div class="mt-8 flex flex-col sm:flex-row items-center justify-end gap-3 no-pdf">
-                <button onclick="window.print()" type="button" class="w-full sm:w-auto px-5 py-2.5 border border-bakery-200 text-bakery-700 hover:bg-bakery-100 rounded-xl text-sm font-medium transition-colors flex items-center justify-center space-x-2">
-                    <i data-lucide="printer" class="w-4 h-4"></i>
-                    <span>Print Direct</span>
-                </button>
-                <button onclick="generatePDFAndEmail()" type="button" class="w-full sm:w-auto px-6 py-2.5 bg-bakery-accent hover:bg-bakery-accentHover text-white rounded-xl text-sm font-semibold shadow-md transition-all flex items-center justify-center space-x-2">
-                    <i data-lucide="file-check" class="w-4 h-4"></i>
-                    <span>Submit & Send Order</span>
-                </button>
-            </div>
-
+        <!-- 1. Whole & Specialty Cakes (Primary - Open First) -->
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-whole')">
+            <span><i class="fa-solid fa-cake-candles" style="margin-right: 8px;"></i> Whole & Specialty Cakes</span>
+            <span class="badge" id="badge-cat-whole">Expanded</span>
+          </div>
+          <div class="accordion-content" id="cat-whole">
+            <!-- Items injected by JS -->
+          </div>
         </div>
-    </main>
 
-    <script>
-        // Item catalog definition from paper form
-        const catalog = [
-            // Category 1: Whole Cakes / Specialty Cakes
-            { id: 'item_1', cat: 'cat-1', name: 'Green Tea Chocolate Cake', prices: [{ label: 'Whole Cake', price: 340 }, { label: 'Slice', price: 60 }] },
-            { id: 'item_2', cat: 'cat-1', name: 'Jasmine Chocolate Cake', prices: [{ label: 'Whole Cake', price: 340 }, { label: 'Slice', price: 60 }] },
-            { id: 'item_3', cat: 'cat-1', name: 'Blueberry Cheese Cake', prices: [{ label: 'Whole Cake', price: 340 }, { label: 'Slice', price: 60 }] },
-            { id: 'item_4', cat: 'cat-1', name: 'Mango Dome', prices: [{ label: 'Whole Cake', price: 340 }, { label: 'Slice', price: 60 }] },
-            { id: 'item_5', cat: 'cat-1', name: 'Strawberry Olive Cake', prices: [{ label: 'Whole Cake', price: 340 }, { label: 'Slice', price: 60 }] },
-            { id: 'item_6', cat: 'cat-1', name: 'Durian Cheese Cake', prices: [{ label: 'Whole Cake', price: 380 }, { label: 'Slice', price: 88 }] },
-            { id: 'item_7', cat: 'cat-1', name: 'Seasonal Cake', prices: [{ label: 'Whole Cake', price: 360 }, { label: 'Slice', price: 68 }] },
-            { id: 'item_8', cat: 'cat-1', name: 'Berry Pandan', prices: [{ label: 'Whole Cake', price: 340 }] },
-            { id: 'item_9', cat: 'cat-1', name: 'Earl Grey Tea Chiffon Cake', prices: [{ label: 'Whole Cake', price: 340 }] },
-            { id: 'item_10', cat: 'cat-1', name: 'Berrylicious Delight', prices: [{ label: 'Whole Cake', price: 340 }] },
-            { id: 'item_11', cat: 'cat-1', name: 'Peacheous Delight', prices: [{ label: 'Whole Cake', price: 340 }] },
-            { id: 'item_12', cat: 'cat-1', name: 'Mango Snow', prices: [{ label: 'Whole Cake', price: 340 }] },
-            { id: 'item_13', cat: 'cat-1', name: 'Forêt Noire (Contains alcohol)', prices: [{ label: 'Whole Cake', price: 340 }] },
-            { id: 'item_14', cat: 'cat-1', name: 'Durian Pandan Opera Cake', prices: [{ label: 'Whole Cake', price: 520 }, { label: 'Slice', price: 100 }] },
-            { id: 'item_15', cat: 'cat-1', name: 'D197 Durian Mille Feuille', prices: [{ label: 'Whole Cake', price: 520 }, { label: 'Slice', price: 100 }] },
-            { id: 'item_16', cat: 'cat-1', name: 'Durian Cream Cake Box', prices: [{ label: 'Box', price: 180 }] },
-            { id: 'item_17', cat: 'cat-1', name: 'Durian Pandan 3D Cake', prices: [{ label: 'Whole Cake', price: 380 }] },
-            { id: 'item_18', cat: 'cat-1', name: 'Durian Burnt Basque Cheesecake', prices: [{ label: 'Whole Cake', price: 420 }, { label: 'Slice', price: 88 }] },
-            { id: 'item_19', cat: 'cat-1', name: 'Lotus Biscoff Durian Cheesecake', prices: [{ label: 'Whole Cake', price: 380 }, { label: 'Slice', price: 198 }] },
-            { id: 'item_20', cat: 'cat-1', name: 'Durian Snowy Cheddar Cheese Pandan', prices: [{ label: 'Whole Cake', price: 210 }] },
-            { id: 'item_21', cat: 'cat-1', name: 'Durian Serradura', prices: [{ label: 'Whole Cake', price: 380 }] },
-            { id: 'item_22', cat: 'cat-1', name: 'Melon Mousse Cake', prices: [{ label: 'Whole Cake', price: 520 }, { label: 'Slice', price: 98 }] },
-            { id: 'item_23', cat: 'cat-1', name: 'Taro Cream Cake', prices: [{ label: 'Whole Cake', price: 360 }, { label: 'Slice', price: 68 }] },
+        <!-- 2. Pastries, Puffs & Slices -->
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-pastries')">
+            <span><i class="fa-solid fa-bread-slice" style="margin-right: 8px;"></i> Pastries, Puffs & Slices</span>
+            <span class="badge" id="badge-cat-pastries">Collapsed</span>
+          </div>
+          <div class="accordion-content collapsed" id="cat-pastries">
+            <!-- Items injected by JS -->
+          </div>
+        </div>
 
-            // Category 2: Mini Cakes, Pastries & Snacks
-            { id: 'item_24', cat: 'cat-2', name: 'Pandan Durian Roulade (1pc)', prices: [{ label: '1 pc', price: 100 }] },
-            { id: 'item_25', cat: 'cat-2', name: 'D197 Durian Cheese Puff (8pcs)', prices: [{ label: '8 pcs', price: 228 }] },
-            { id: 'item_26', cat: 'cat-2', name: 'Mini D24 Durian Cheese Tart (12pcs)', prices: [{ label: '12 pcs', price: 168 }] },
-            { id: 'item_27', cat: 'cat-2', name: 'Pandan Mango Cream Roll', prices: [{ label: '1 pc', price: 60 }] },
-            { id: 'item_28', cat: 'cat-2', name: 'Pandan Chiffon Cake', prices: [{ label: 'Whole', price: 138 }] },
-            { id: 'item_29', cat: 'cat-2', name: 'Scone (4pcs)', prices: [{ label: '4 pcs', price: 72 }] },
-            { id: 'item_30', cat: 'cat-2', name: 'Blueberry Mini Cream Cake', prices: [{ label: 'Mini', price: 35 }] },
-            { id: 'item_31', cat: 'cat-2', name: 'Chocolate Mini Cream Cake', prices: [{ label: 'Mini', price: 35 }] },
-            { id: 'item_32', cat: 'cat-2', name: 'Mango Mini Cream Cake', prices: [{ label: 'Mini', price: 35 }] },
-            { id: 'item_33', cat: 'cat-2', name: 'Melon Mini Cream Cake', prices: [{ label: 'Mini', price: 35 }] },
-            { id: 'item_34', cat: 'cat-2', name: 'Strawberry Mini Cream Cake', prices: [{ label: 'Mini', price: 35 }] },
-            { id: 'item_35', cat: 'cat-2', name: 'Earl Grey Roulade with Mochi', prices: [{ label: '1 pc', price: 68 }] },
-            { id: 'item_36', cat: 'cat-2', name: 'Durian Serradura Cup', prices: [{ label: 'Cup', price: 88 }] },
-            { id: 'item_37', cat: 'cat-2', name: 'Coffee Cookies (8pcs)', prices: [{ label: 'Pack', price: 158 }] },
-            { id: 'item_38', cat: 'cat-2', name: 'XO Sauce (238g)', prices: [{ label: 'Jar', price: 238 }] },
-            { id: 'item_39', cat: 'cat-2', name: 'Tiramisu', prices: [{ label: 'Slice/Cup', price: 60 }] },
-            { id: 'item_40', cat: 'cat-2', name: 'A&B Crystal Walnut (0.5lb)', prices: [{ label: '0.5 lb', price: 198 }] },
-            { id: 'item_41', cat: 'cat-2', name: 'Salted Egg & Sakura Shrimp Cookies', prices: [{ label: '8 pcs', price: 158 }] },
-            { id: 'item_42', cat: 'cat-2', name: 'Butterfly Cookies', prices: [{ label: 'Pack', price: 98 }] },
-            { id: 'item_43', cat: 'cat-2', name: 'Assorted Chocolate (9pcs)', prices: [{ label: 'Box', price: 288 }] },
+        <!-- 3. Cookies, Sweets & Pantry -->
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-sweets')">
+            <span><i class="fa-solid fa-cookie-bite" style="margin-right: 8px;"></i> Cookies, Sweets & Pantry</span>
+            <span class="badge" id="badge-cat-sweets">Collapsed</span>
+          </div>
+          <div class="accordion-content collapsed" id="cat-sweets">
+            <!-- Items injected by JS -->
+          </div>
+        </div>
 
-            // Category 3: Add-ons
-            { id: 'item_44', cat: 'cat-3', name: 'ICONIC Eats Birthday Cake', prices: [{ label: 'Standard', price: 0 }] },
-            { id: 'item_45', cat: 'cat-3', name: 'Thermal Bag & Ice Gel', prices: [{ label: 'Set', price: 50 }] }
-        ];
+        <!-- 4. Add-ons & Birthday Accessories -->
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-addons')">
+            <span><i class="fa-solid fa-gift" style="margin-right: 8px;"></i> Add-ons & Birthday Accessories</span>
+            <span class="badge" id="badge-cat-addons">Collapsed</span>
+          </div>
+          <div class="accordion-content collapsed" id="cat-addons">
+            <!-- Items injected by JS -->
+          </div>
+        </div>
 
-        // Selected items state: { [itemId_variantIdx]: quantity }
-        let orderState = {};
+        <!-- 5. All Items View at the End -->
+        <div class="category-accordion" style="margin-top: 24px; border-top: 2px dashed var(--accent);">
+          <div class="accordion-header" style="background: #eaf6ee;" onclick="toggleAccordion('cat-all')">
+            <span><i class="fa-solid fa-list-check" style="margin-right: 8px;"></i> All Items (Complete Flat View)</span>
+            <span class="badge" id="badge-cat-all">Collapsed</span>
+          </div>
+          <div class="accordion-content collapsed" id="cat-all">
+            <!-- Full List injected by JS -->
+          </div>
+        </div>
 
-        window.onload = function() {
-            // Set default date to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('order-date').value = today;
-            document.getElementById('pickup-date').value = today;
+      </div>
 
-            renderCatalog();
-            lucide.createIcons();
+      <!-- Real-Time Auto-Updating Order Summary -->
+      <div class="card">
+        <div class="card-title">
+          <i class="fa-solid fa-receipt"></i> Order Summary
+          <span id="selected-count-badge" style="margin-left: auto; font-size: 0.8rem; background: var(--light-green); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600;">0 ITEMS SELECTED</span>
+        </div>
+        
+        <div class="summary-table-container">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Option / Size</th>
+                <th>Price</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="summary-tbody">
+              <!-- Dynamically updated by JavaScript -->
+            </tbody>
+          </table>
+          <div id="empty-msg" class="empty-summary-msg">
+            No items selected yet. Select items above to update this summary automatically.
+          </div>
+        </div>
+      </div>
+
+      <!-- Single Bottom Submit Button -->
+      <div class="submit-container">
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-paper-plane"></i> Submit Order
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Confirmation / Thank You Screen -->
+  <div class="container" id="confirmation-screen">
+    <i class="fa-solid fa-circle-check"></i>
+    <h2>Order Submitted Successfully!</h2>
+    <p>Thank you for your order. A PDF copy of your summary has been automatically saved, and our team has been notified via email.</p>
+    <button class="btn-secondary" onclick="resetFormView()">
+      <i class="fa-solid fa-arrow-left"></i> Submit Another Order
+    </button>
+  </div>
+
+  <script>
+    // --- 1. HARDCODED RECIPIENT EMAILS (CONFIGURABLE) ---
+    const HARDCODED_RECIPIENT_EMAILS = [
+      "orders@example.com",
+      "admin@example.com"
+    ];
+
+    // --- 2. COMPLETE ITEM DATASET ---
+    const cakeData = [
+      // Whole & Specialty Cakes
+      { id: "item_1", name: "Green Tea Chocolate Cake", prices: [{ label: "Standard", price: 60 }, { label: "Large", price: 340 }], cat: "whole" },
+      { id: "item_2", name: "Jasmine Chocolate Cake", prices: [{ label: "Standard", price: 60 }, { label: "Large", price: 340 }], cat: "whole" },
+      { id: "item_3", name: "Blueberry Cheese Cake", prices: [{ label: "Standard", price: 60 }, { label: "Large", price: 340 }], cat: "whole" },
+      { id: "item_4", name: "Mango Dome", prices: [{ label: "Standard", price: 60 }, { label: "Large", price: 340 }], cat: "whole" },
+      { id: "item_5", name: "Strawberry Olive Cake", prices: [{ label: "Standard", price: 60 }, { label: "Large", price: 340 }], cat: "whole" },
+      { id: "item_6", name: "Durian Cheese Cake", prices: [{ label: "Standard", price: 88 }, { label: "Large", price: 380 }], cat: "whole" },
+      { id: "item_7", name: "Seasonal Cake", prices: [{ label: "Standard", price: 68 }, { label: "Large", price: 360 }], cat: "whole" },
+      { id: "item_8", name: "Berry Pandan", prices: [{ label: "Large (Whole)", price: 340 }], cat: "whole" },
+      { id: "item_9", name: "Earl Grey Tea Chiffon Cake", prices: [{ label: "Large (Whole)", price: 340 }], cat: "whole" },
+      { id: "item_10", name: "Berrylicious Delight", prices: [{ label: "Large (Whole)", price: 340 }], cat: "whole" },
+      { id: "item_11", name: "Peacheous Delight", prices: [{ label: "Large (Whole)", price: 340 }], cat: "whole" },
+      { id: "item_12", name: "Mango Snow", prices: [{ label: "Large (Whole)", price: 340 }], cat: "whole" },
+      { id: "item_13", name: "Forêt Noire (Contains alcohol)", prices: [{ label: "Large (Whole)", price: 340 }], cat: "whole" },
+      { id: "item_14", name: "Durian Pandan Opera Cake", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }], cat: "whole" },
+      { id: "item_15", name: "D197 Durian Mille Feuille", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }], cat: "whole" },
+      { id: "item_16", name: "Durian Cream Cake Box", prices: [{ label: "1 Box", price: 180 }], cat: "whole" },
+      { id: "item_17", name: "Durian Pandan 3D Cake", prices: [{ label: "Whole", price: 380 }], cat: "whole" },
+      { id: "item_18", name: "Durian Burnt Basque Cheesecake", prices: [{ label: "Slice", price: 88 }, { label: "Whole", price: 420 }], cat: "whole" },
+      { id: "item_19", name: "Lotus Biscoff Durian Cheesecake", prices: [{ label: "Slice", price: 198 }, { label: "Whole", price: 380 }], cat: "whole" },
+      { id: "item_20", name: "Durian Snowy Cheddar Cheese Pandan Cake", prices: [{ label: "Whole", price: 210 }], cat: "whole" },
+      { id: "item_21", name: "Durian Serradura", prices: [{ label: "Whole", price: 380 }], cat: "whole" },
+      { id: "item_22", name: "Taro Cream Cake", prices: [{ label: "Slice", price: 68 }, { label: "Whole", price: 360 }], cat: "whole" },
+      { id: "item_23", name: "Melon Mousse Cake", prices: [{ label: "Slice", price: 98 }, { label: "Whole", price: 520 }], cat: "whole" },
+
+      // Pastries, Puffs & Slices
+      { id: "item_24", name: "Pandan Durian Roulade (1pc)", prices: [{ label: "1 pc", price: 100 }], cat: "pastries" },
+      { id: "item_25", name: "D197 Durian Cheese Puff (8pcs)", prices: [{ label: "8 pcs", price: 228 }], cat: "pastries" },
+      { id: "item_26", name: "Mini D24 Durian Cheese Tart (12pcs)", prices: [{ label: "12 pcs", price: 168 }], cat: "pastries" },
+      { id: "item_27", name: "Pandan Mango Cream Roll", prices: [{ label: "1 pc", price: 60 }], cat: "pastries" },
+      { id: "item_28", name: "Pandan Chiffon Cake", prices: [{ label: "1 pc", price: 138 }], cat: "pastries" },
+      { id: "item_29", name: "Scone (4pcs)", prices: [{ label: "4 pcs", price: 72 }], cat: "pastries" },
+      { id: "item_30", name: "Blueberry Mini Cream Cake", prices: [{ label: "Mini", price: 35 }], cat: "pastries" },
+      { id: "item_31", name: "Chocolate Mini Cream Cake", prices: [{ label: "Mini", price: 35 }], cat: "pastries" },
+      { id: "item_32", name: "Mango Mini Cream Cake", prices: [{ label: "Mini", price: 35 }], cat: "pastries" },
+      { id: "item_33", name: "Melon Mini Cream Cake", prices: [{ label: "Mini", price: 35 }], cat: "pastries" },
+      { id: "item_34", name: "Strawberry Mini Cream Cake", prices: [{ label: "Mini", price: 35 }], cat: "pastries" },
+      { id: "item_35", name: "Earl Grey Roulade with Mochi", prices: [{ label: "1 pc", price: 68 }], cat: "pastries" },
+      { id: "item_36", name: "Durian Serradura Cup", prices: [{ label: "1 Cup", price: 88 }], cat: "pastries" },
+      { id: "item_37", name: "Tiramisu", prices: [{ label: "1 Cup", price: 60 }], cat: "pastries" },
+
+      // Cookies, Sweets & Pantry
+      { id: "item_38", name: "Coffee Cookies (8pcs)", prices: [{ label: "8 pcs", price: 158 }], cat: "sweets" },
+      { id: "item_39", name: "XO Sauce (238g)", prices: [{ label: "1 Jar", price: 238 }], cat: "sweets" },
+      { id: "item_40", name: "A&B Crystal Walnut (0.5lb)", prices: [{ label: "0.5 lb", price: 198 }], cat: "sweets" },
+      { id: "item_41", name: "Salted Egg & Sakura Shrimp Cookies (8pcs)", prices: [{ label: "8 pcs", price: 158 }], cat: "sweets" },
+      { id: "item_42", name: "Butterfly Cookies", prices: [{ label: "1 Box", price: 98 }], cat: "sweets" },
+      { id: "item_43", name: "Assorted Chocolate (9pcs)", prices: [{ label: "9 pcs", price: 288 }], cat: "sweets" },
+
+      // Add-ons
+      { id: "item_44", name: "ICONIC Eats Birthday Cake", prices: [{ label: "Standard", price: 0 }], cat: "addons" },
+      { id: "item_45", name: "Thermal Bag & Ice Gel", prices: [{ label: "Set", price: 50 }], cat: "addons" }
+    ];
+
+    // State tracking
+    const selectedState = {};
+
+    // --- 3. INITIALIZE & RENDER FORM ---
+    function init() {
+      // Render categorized items
+      cakeData.forEach(item => {
+        const itemHtml = createItemCardHtml(item);
+        
+        // Append to main category container
+        const catContainer = document.getElementById(`cat-${item.cat}`);
+        if (catContainer) catContainer.insertAdjacentHTML('beforeend', itemHtml);
+
+        // Append to 'All Items' container as well
+        const allContainer = document.getElementById('cat-all');
+        if (allContainer) allContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item, 'all_'));
+      });
+
+      // Set default pickup date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('pickupDate').value = tomorrow.toISOString().split('T')[0];
+    }
+
+    function createItemCardHtml(item, prefix = '') {
+      const priceText = item.prices.map(p => `$${p.price}`).join(' / ');
+      const elementId = prefix + item.id;
+
+      let optionsHtml = '';
+      if (item.prices.length > 1) {
+        optionsHtml = `
+          <select class="size-select" id="size_${elementId}" onchange="updateItemSelection('${item.id}', '${prefix}')">
+            ${item.prices.map((p, idx) => `<option value="${idx}">${p.label} -$${p.price}</option>`).join('')}
+          </select>`;
+      } else {
+        optionsHtml = `<span style="font-size:0.8rem; color:#666;">${item.prices[0].label}</span>`;
+      }
+
+      return `
+        <div class="item-card" id="card_${elementId}">
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">${priceText}</div>
+          </div>
+          <div class="item-controls">
+            ${optionsHtml}
+            <div class="qty-picker">
+              <button type="button" class="qty-btn" onclick="changeQty('${item.id}', -1, '${prefix}')">-</button>
+              <input type="number" id="qty_${elementId}" class="qty-input" value="0" min="0" onchange="updateItemSelection('${item.id}', '${prefix}')">
+              <button type="button" class="qty-btn" onclick="changeQty('${item.id}', 1, '${prefix}')">+</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleAccordion(id) {
+      const content = document.getElementById(id);
+      const badge = document.getElementById(`badge-${id}`);
+      if (!content || !badge) return;
+
+      const isCollapsed = content.classList.contains('collapsed');
+      if (isCollapsed) {
+        content.classList.remove('collapsed');
+        badge.innerText = 'Expanded';
+      } else {
+        content.classList.add('collapsed');
+        badge.innerText = 'Collapsed';
+      }
+    }
+
+    // --- 4. REACTIVE STATE & SUMMARY UPDATE ---
+    function changeQty(itemId, delta, prefix) {
+      const input = document.getElementById(`qty_${prefix}${itemId}`);
+      let currentVal = parseInt(input.value) || 0;
+      currentVal = Math.max(0, currentVal + delta);
+      input.value = currentVal;
+      
+      // Keep primary and 'all' inputs in sync
+      const altPrefix = prefix === '' ? 'all_' : '';
+      const altInput = document.getElementById(`qty_${altPrefix}${itemId}`);
+      if (altInput) altInput.value = currentVal;
+
+      updateItemSelection(itemId, prefix);
+    }
+
+    function updateItemSelection(itemId, prefix) {
+      const item = cakeData.find(i => i.id === itemId);
+      const qtyInput = document.getElementById(`qty_${prefix}${itemId}`);
+      const qty = parseInt(qtyInput.value) || 0;
+
+      let sizeIdx = 0;
+      const sizeSelect = document.getElementById(`size_${prefix}${itemId}`);
+      if (sizeSelect) {
+        sizeIdx = parseInt(sizeSelect.value) || 0;
+        // Sync alt option
+        const altPrefix = prefix === '' ? 'all_' : '';
+        const altSelect = document.getElementById(`size_${altPrefix}${itemId}`);
+        if (altSelect) altSelect.value = sizeIdx;
+      }
+
+      const card = document.getElementById(`card_${prefix}${itemId}`);
+      const altCard = document.getElementById(`card_${prefix === '' ? 'all_' : ''}${itemId}`);
+
+      if (qty > 0) {
+        selectedState[itemId] = {
+          name: item.name,
+          option: item.prices[sizeIdx].label,
+          price: item.prices[sizeIdx].price,
+          qty: qty,
+          subtotal: item.prices[sizeIdx].price * qty
         };
+        if (card) card.classList.add('has-qty');
+        if (altCard) altCard.classList.add('has-qty');
+      } else {
+        delete selectedState[itemId];
+        if (card) card.classList.remove('has-qty');
+        if (altCard) altCard.classList.remove('has-qty');
+      }
 
-        function renderCatalog() {
-            const grids = {
-                'cat-1': document.getElementById('cat-1-grid'),
-                'cat-2': document.getElementById('cat-2-grid'),
-                'cat-3': document.getElementById('cat-3-grid')
-            };
+      renderSummaryTable();
+    }
 
-            // Clear grids
-            Object.values(grids).forEach(grid => grid.innerHTML = '');
+    function renderSummaryTable() {
+      const tbody = document.getElementById('summary-tbody');
+      const emptyMsg = document.getElementById('empty-msg');
+      const badge = document.getElementById('selected-count-badge');
+      
+      tbody.innerHTML = '';
+      const items = Object.values(selectedState);
+      let grandTotal = 0;
+      let totalCount = 0;
 
-            catalog.forEach(item => {
-                const card = document.createElement('div');
-                card.className = `item-card border border-bakery-200 rounded-xl p-3 bg-white transition-all flex flex-col justify-between item-element`;
-                card.dataset.name = item.name.toLowerCase();
-                card.dataset.cat = item.cat;
+      if (items.length === 0) {
+        emptyMsg.style.display = 'block';
+        badge.innerText = '0 ITEMS SELECTED';
+        return;
+      }
 
-                let optionsHtml = '';
-                item.prices.forEach((opt, idx) => {
-                    const key = `${item.id}_${idx}`;
-                    const qty = orderState[key] || 0;
+      emptyMsg.style.display = 'none';
 
-                    optionsHtml += `
-                        <div class="flex items-center justify-between text-xs py-1 border-t border-bakery-100 first:border-0 mt-1">
-                            <span class="text-bakery-700 font-medium">${opt.label} <strong class="text-bakery-accent ml-1">$${opt.price}</strong></span>
-                            <div class="flex items-center space-x-1">
-                                <button type="button" onclick="updateQty('${key}', -1)" class="w-6 h-6 rounded-md bg-bakery-100 hover:bg-bakery-200 text-bakery-800 font-bold flex items-center justify-center transition-colors">-</button>
-                                <span class="w-6 text-center font-bold text-sm text-bakery-800" id="qty_${key}">${qty}</span>
-                                <button type="button" onclick="updateQty('${key}', 1)" class="w-6 h-6 rounded-md bg-bakery-accent hover:bg-bakery-accentHover text-white font-bold flex items-center justify-center transition-colors">+</button>
-                            </div>
-                        </div>
-                    `;
-                });
+      items.forEach(item => {
+        grandTotal += item.subtotal;
+        totalCount += item.qty;
 
-                card.innerHTML = `
-                    <div>
-                        <h4 class="font-semibold text-sm text-bakery-800 leading-snug mb-1">${item.name}</h4>
-                    </div>
-                    <div class="mt-2">
-                        ${optionsHtml}
-                    </div>
-                `;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-weight: 500;">${item.name}</td>
+          <td style="color: #666;">${item.option}</td>
+          <td>$${item.price}</td>
+          <td style="text-align: center; font-weight: 600;">${item.qty}</td>
+          <td style="text-align: right; font-weight: 600;">$${item.subtotal}</td>
+        `;
+        tbody.appendChild(row);
+      });
 
-                if (grids[item.cat]) {
-                    grids[item.cat].appendChild(card);
-                }
-            });
-        }
+      // Total Row
+      const totalRow = document.createElement('tr');
+      totalRow.className = 'summary-total-row';
+      totalRow.innerHTML = `
+        <td colspan="3">Estimated Total Amount</td>
+        <td style="text-align: center;">${totalCount}</td>
+        <td style="text-align: right; color: var(--primary); font-size: 1.2rem;">$${grandTotal}</td>
+      `;
+      tbody.appendChild(totalRow);
 
-        function updateQty(key, delta) {
-            const current = orderState[key] || 0;
-            const updated = Math.max(0, current + delta);
-            if (updated === 0) {
-                delete orderState[key];
-            } else {
-                orderState[key] = updated;
-            }
+      badge.innerText = `${totalCount} ITEM(S) SELECTED`;
+    }
 
-            const qtyEl = document.getElementById(`qty_${key}`);
-            if (qtyEl) qtyEl.innerText = updated;
+    // --- 5. SUBMIT HANDLER & PDF GENERATION ---
+    document.getElementById('cake-order-form').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-            recalculateSummary();
-        }
+      const selectedItems = Object.values(selectedState);
+      if (selectedItems.length === 0) {
+        alert("Please select at least one item before submitting.");
+        return;
+      }
 
-        function recalculateSummary() {
-            const tbody = document.getElementById('summary-table-body');
-            tbody.innerHTML = '';
+      const guestName = document.getElementById('guestName').value;
+      const tel = document.getElementById('tel').value;
+      const pickupDate = document.getElementById('pickupDate').value;
+      const pickupTime = document.getElementById('pickupTime').value;
+      const wording = document.getElementById('wording').value || 'None';
+      const remarks = document.getElementById('remarks').value || 'None';
 
-            let grandTotal = 0;
-            let totalCount = 0;
+      // Generate HTML Template for PDF
+      let pdfContent = `
+        <div style="padding: 24px; font-family: sans-serif;">
+          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - Submission</h2>
+          <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Order Date: ${new Date().toLocaleString()}</p>
 
-            const selectedKeys = Object.keys(orderState);
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td style="padding: 6px;">${guestName}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Contact Tel:</td><td style="padding: 6px;">${tel}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Pickup Date & Time:</td><td style="padding: 6px;">${pickupDate} at ${pickupTime}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Wording on Cake:</td><td style="padding: 6px;">${wording}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td style="padding: 6px;">${remarks}</td></tr>
+          </table>
 
-            if (selectedKeys.length === 0) {
-                tbody.innerHTML = `
-                    <tr id="empty-summary-row">
-                        <td colspan="5" class="p-4 text-center text-bakery-500 italic">
-                            No items added yet. Choose items above to build your order.
-                        </td>
-                    </tr>
-                `;
-            } else {
-                selectedKeys.forEach(key => {
-                    const [itemId, idxStr] = key.split('_');
-                    const idx = parseInt(idxStr);
-                    const qty = orderState[key];
+          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" borderColor="#e2e8f0" cellpadding="8">
+            <thead>
+              <tr style="background: #f4f8f5; color: #1b4332;">
+                <th align="left">Item Name</th>
+                <th align="left">Option / Size</th>
+                <th align="right">Price</th>
+                <th align="center">Qty</th>
+                <th align="right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
 
-                    const item = catalog.find(i => i.id === itemId);
-                    if (!item) return;
+      let grandTotal = 0;
+      selectedItems.forEach(item => {
+        grandTotal += item.subtotal;
+        pdfContent += `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.option}</td>
+            <td align="right">$${item.price}</td>
+            <td align="center">${item.qty}</td>
+            <td align="right">$${item.subtotal}</td>
+          </tr>
+        `;
+      });
 
-                    const priceObj = item.prices[idx];
-                    const subtotal = priceObj.price * qty;
+      pdfContent += `
+            <tr style="font-weight: bold; background: #f7fcf8;">
+              <td colspan="4" align="right">Total Amount:</td>
+              <td align="right" style="color: #1b4332;">$${grandTotal}</td>
+            </tr>
+            </tbody>
+          </table>
+          <p style="margin-top: 20px; font-size: 11px; color: #888;">Notifications configured for: ${HARDCODED_RECIPIENT_EMAILS.join(', ')}</p>
+        </div>
+      `;
 
-                    grandTotal += subtotal;
-                    totalCount += qty;
+      // Trigger automatic PDF download
+      const opt = {
+        margin: 0.5,
+        filename: `Cake_Order_${guestName.replace(/\s+/g, '_')}_${pickupDate}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
 
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-bakery-100 hover:bg-white';
-                    tr.innerHTML = `
-                        <td class="p-2.5 font-medium text-bakery-800">${item.name}</td>
-                        <td class="p-2.5 text-bakery-500">${priceObj.label}</td>
-                        <td class="p-2.5 text-center">$${priceObj.price}</td>
-                        <td class="p-2.5 text-center font-bold">${qty}</td>
-                        <td class="p-2.5 text-right font-bold text-bakery-accent">$${subtotal}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
+      html2pdf().set(opt).from(pdfContent).save();
 
-            document.getElementById('grand-total').innerText = grandTotal;
-            document.getElementById('selected-count-badge').innerText = `${totalCount} item(s) selected`;
-        }
+      // Show confirmation screen
+      document.getElementById('form-view').style.display = 'none';
+      document.getElementById('confirmation-screen').style.display = 'block';
+      window.scrollTo(0, 0);
+    });
 
-        function filterCategory(catId) {
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                tab.classList.remove('bg-white', 'shadow-sm', 'text-bakery-800');
-                tab.classList.add('text-bakery-500');
-            });
+    function resetFormView() {
+      document.getElementById('cake-order-form').reset();
+      Object.keys(selectedState).forEach(key => delete selectedState[key]);
+      
+      // Clear CSS states
+      document.querySelectorAll('.item-card').forEach(card => card.classList.remove('has-qty'));
+      document.querySelectorAll('.qty-input').forEach(input => input.value = '0');
 
-            const activeTab = document.getElementById(`tab-${catId}`);
-            if (activeTab) {
-                activeTab.classList.add('bg-white', 'shadow-sm', 'text-bakery-800');
-                activeTab.classList.remove('text-bakery-500');
-            }
+      renderSummaryTable();
+      document.getElementById('confirmation-screen').style.display = 'none';
+      document.getElementById('form-view').style.display = 'block';
+    }
 
-            const sections = document.querySelectorAll('.category-group');
-            sections.forEach(sec => {
-                if (catId === 'all') {
-                    sec.style.display = 'block';
-                } else if (sec.id === `${catId}-section`) {
-                    sec.style.display = 'block';
-                } else {
-                    sec.style.display = 'none';
-                }
-            });
-        }
-
-        function filterItems() {
-            const query = document.getElementById('search-input').value.toLowerCase().trim();
-            const items = document.querySelectorAll('.item-element');
-
-            items.forEach(item => {
-                const name = item.dataset.name;
-                if (name.includes(query)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function resetForm() {
-            if (confirm("Are you sure you want to reset all quantities and field inputs?")) {
-                orderState = {};
-                renderCatalog();
-                recalculateSummary();
-                document.querySelectorAll('input[type="text"], input[type="tel"], textarea').forEach(i => i.value = '');
-                showToast("Form has been reset");
-            }
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        function generatePDFAndEmail() {
-            const guestName = document.getElementById('guest-name').value.trim();
-            const guestTel = document.getElementById('guest-tel').value.trim();
-
-            if (!guestName || !guestTel) {
-                alert("Please fill in required fields: Guest Name and Tel Number.");
-                document.getElementById('guest-name').focus();
-                return;
-            }
-
-            if (Object.keys(orderState).length === 0) {
-                alert("Please select at least one cake/item before generating the order PDF.");
-                return;
-            }
-
-            showToast("Generating PDF order summary...");
-
-            const element = document.getElementById('order-form-container');
-            const targetEmail = document.getElementById('target-email').value.trim() || 'orders@bakery.com';
-
-            // Configure html2pdf parameters
-            const opt = {
-                margin:       [0.3, 0.3, 0.3, 0.3],
-                filename:     `Cake_Order_${guestName.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-
-            // Temporarily hide non-printable elements for a clean PDF
-            element.classList.add('pdf-mode');
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('pdf-mode');
-                
-                // Construct mailto link with structured order breakdown
-                const grandTotal = document.getElementById('grand-total').innerText;
-                const date = document.getElementById('order-date').value;
-                const pickupDate = document.getElementById('pickup-date').value;
-                const pickupTime = document.getElementById('pickup-time').value;
-                const outlet = document.getElementById('pickup-outlet').value || 'Default Outlet';
-                const wording = document.getElementById('cake-wording').value || 'None';
-
-                let orderItemsText = "";
-                Object.keys(orderState).forEach(key => {
-                    const [itemId, idxStr] = key.split('_');
-                    const idx = parseInt(idxStr);
-                    const item = catalog.find(i => i.id === itemId);
-                    if (item) {
-                        orderItemsText += `- ${item.name} (${item.prices[idx].label}) x ${orderState[key]}\n`;
-                    }
-                });
-
-                const emailSubject = encodeURIComponent(`New Cake Order - ${guestName} (${pickupDate})`);
-                const emailBody = encodeURIComponent(
-                    `Hello,\n\nA new cake order has been placed. Please see the details below:\n\n` +
-                    `CUSTOMER DETAILS:\n` +
-                    `Guest Name: ${guestName}\n` +
-                    `Tel: ${guestTel}\n` +
-                    `Pickup Outlet: ${outlet}\n` +
-                    `Pickup Date/Time: ${pickupDate} @ ${pickupTime}\n` +
-                    `Wording on Cake: ${wording}\n\n` +
-                    `ORDER ITEMS:\n${orderItemsText}\n` +
-                    `TOTAL AMOUNT: $${grandTotal}\n\n` +
-                    `Note: The official PDF summary has been generated and saved to downloads. Please attach it to this email.\n\nThank you!`
-                );
-
-                // Prompt user to send email
-                setTimeout(() => {
-                    window.location.href = `mailto:${targetEmail}?subject=${emailSubject}&body=${emailBody}`;
-                }, 800);
-
-                showToast("PDF downloaded! Opening mail client...");
-            }).catch(err => {
-                console.error(err);
-                element.classList.remove('pdf-mode');
-                alert("An error occurred while generating PDF. Please try again.");
-            });
-        }
-    </script>
+    // Initialize application
+    init();
+  </script>
 </body>
 </html>
